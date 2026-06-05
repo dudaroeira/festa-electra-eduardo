@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Painel · Confirmações da Festa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--cream:#efe6d5;--card:#f7f1e4;--brown:#3c2e23;--brown-soft:#5b4a3b;
+    --rust:#b0522d;--line:#d8c9ad;--green:#5a6b4a;--red:#9a5b4a}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Cormorant Garamond',Georgia,serif;background:var(--cream);color:var(--brown);font-size:17px}
+  .wrap{max-width:900px;margin:0 auto;padding:24px 18px 60px}
+  h1{font-family:'Playfair Display',serif;font-weight:800;font-size:32px;text-align:center;margin-bottom:4px}
+  .subtitle{text-align:center;color:var(--brown-soft);margin-bottom:24px}
+
+  /* login */
+  .gate{max-width:360px;margin:60px auto;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:30px;text-align:center}
+  .gate input{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:9px;margin:14px 0;
+    font-family:inherit;font-size:18px}
+  .gate button,.btn{background:var(--rust);color:#fff;border:none;border-radius:9px;padding:12px 18px;
+    font-family:'Playfair Display',serif;font-size:16px;cursor:pointer}
+  .gate .err{color:var(--red);font-size:15px;min-height:20px}
+
+  /* dashboard */
+  #dash{display:none}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
+  .stat .num{font-family:'Playfair Display',serif;font-weight:800;font-size:42px;color:var(--rust);line-height:1}
+  .stat .lbl{color:var(--brown-soft);margin-top:6px;font-size:15px}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap}
+  .toolbar .btn.ghost{background:#fff;color:var(--brown);border:1.5px solid var(--line)}
+
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;overflow:hidden}
+  th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-family:'Playfair Display',serif;font-weight:600;font-size:14px;letter-spacing:.04em;
+    background:#efe2c9;color:var(--brown)}
+  tr:last-child td{border-bottom:none}
+  .tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:13px;font-family:'Playfair Display',serif}
+  .tag.sim{background:#dfe7d3;color:var(--green)}
+  .tag.nao{background:#f0dcd5;color:var(--red)}
+  .acomp{color:var(--brown-soft);font-size:15px}
+  .del{background:none;border:none;color:var(--red);cursor:pointer;font-size:18px}
+  .empty{text-align:center;color:var(--brown-soft);padding:30px}
+  a.back{display:inline-block;margin-top:20px;color:var(--rust);text-decoration:none;font-family:'Playfair Display',serif}
+  @media(max-width:560px){.cards{grid-template-columns:1fr}th:nth-child(2),td:nth-child(2){display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Confirmações da Festa</h1>
+  <div class="subtitle">Electra &amp; Eduardo · 06/09/2026</div>
+
+  <!-- LOGIN -->
+  <div class="gate" id="gate">
+    <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px">Área restrita</div>
+    <div style="color:var(--brown-soft);font-size:15px">Digite a senha para ver as confirmações</div>
+    <input type="password" id="senha" placeholder="Senha" />
+    <div class="err" id="gateErr"></div>
+    <button onclick="entrar()">Entrar</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dash">
+    <div class="cards">
+      <div class="stat"><div class="num" id="nConfirma">0</div><div class="lbl">Famílias confirmadas</div></div>
+      <div class="stat"><div class="num" id="nPessoas">0</div><div class="lbl">Total de pessoas</div></div>
+      <div class="stat"><div class="num" id="nNao">0</div><div class="lbl">Não poderão ir</div></div>
+    </div>
+
+    <div class="toolbar">
+      <div id="statusMsg" style="color:var(--brown-soft)"></div>
+      <button class="btn ghost" onclick="carregar()">↻ Atualizar</button>
+    </div>
+
+    <table>
+      <thead><tr><th>Nome</th><th>WhatsApp</th><th>Acompanhantes</th><th>Resposta</th><th></th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <a class="back" href="index.html">← Ver convite</a>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+  function entrar(){
+    const v = document.getElementById('senha').value;
+    if(v === CONFIG.ADMIN_SENHA){
+      document.getElementById('gate').style.display='none';
+      document.getElementById('dash').style.display='block';
+      carregar();
+    }else{
+      document.getElementById('gateErr').textContent='Senha incorreta.';
+    }
+  }
+  document.getElementById('senha').addEventListener('keydown',e=>{if(e.key==='Enter')entrar();});
+
+  async function carregar(){
+    const status = document.getElementById('statusMsg');
+    status.textContent = 'Carregando...';
+    let data;
+    try {
+      const resp = await fetch(CONFIG.WEBAPP_URL, {
+        method:'POST',
+        body: JSON.stringify({ action:'list', key: CONFIG.ADMIN_SENHA })
+      });
+      const r = await resp.json();
+      if(r.error) throw new Error(r.error);
+      data = r.data || [];
+    } catch(error){
+      status.textContent='Erro ao carregar. Confira o config.js / a URL do Apps Script.';
+      console.error(error); return;
+    }
+
+    const confirmados = data.filter(d=>d.comparece);
+    const recusados = data.filter(d=>!d.comparece);
+    let totalPessoas = 0;
+    confirmados.forEach(d=>{ totalPessoas += 1 + ((d.acompanhantes&&d.acompanhantes.length)||0); });
+
+    document.getElementById('nConfirma').textContent = confirmados.length;
+    document.getElementById('nPessoas').textContent = totalPessoas;
+    document.getElementById('nNao').textContent = recusados.length;
+
+    const tb = document.getElementById('tbody');
+    tb.innerHTML='';
+    if(!data.length){
+      tb.innerHTML='<tr><td colspan="5" class="empty">Nenhuma resposta ainda.</td></tr>';
+    }
+    data.forEach(d=>{
+      const acomp = (d.acompanhantes&&d.acompanhantes.length)
+        ? d.acompanhantes.join(', ') : '—';
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        `<td><b>${esc(d.nome)}</b></td>`+
+        `<td>${esc(d.telefone||'')}</td>`+
+        `<td class="acomp">${esc(acomp)}</td>`+
+        `<td>${d.comparece?'<span class="tag sim">Vai</span>':'<span class="tag nao">Não vai</span>'}</td>`+
+        `<td><button class="del" title="excluir" onclick="excluir('${d.id}')">🗑</button></td>`;
+      tb.appendChild(tr);
+    });
+    status.textContent = `${data.length} resposta(s) · atualizado ${new Date().toLocaleTimeString('pt-BR')}`;
+  }
+
+  async function excluir(id){
+    if(!confirm('Excluir esta resposta?')) return;
+    try {
+      const resp = await fetch(CONFIG.WEBAPP_URL, {
+        method:'POST',
+        body: JSON.stringify({ action:'delete', id: id, key: CONFIG.ADMIN_SENHA })
+      });
+      const r = await resp.json();
+      if(r.error) throw new Error(r.error);
+    } catch(error){ alert('Não consegui excluir.'); console.error(error); return; }
+    carregar();
+  }
+
+  function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+</script>
+</body>
+</html>

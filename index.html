@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Confirme sua presença · Electra & Eduardo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Great+Vibes&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#efe6d5;
+    --cream-2:#f5eee0;
+    --card:#f7f1e4;
+    --brown:#3c2e23;
+    --brown-soft:#5b4a3b;
+    --rust:#b0522d;
+    --rust-dark:#8f3f20;
+    --line:#d8c9ad;
+    --green:#5a6b4a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Cormorant Garamond',Georgia,serif;
+    background:var(--cream);
+    color:var(--brown);
+    font-size:18px;
+    line-height:1.5;
+  }
+  .wrap{max-width:640px;margin:0 auto;background:var(--cream);min-height:100vh;
+    box-shadow:0 0 60px rgba(60,46,35,.08);}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;background:linear-gradient(180deg,#9fb08c 0%,#7d9268 45%,#6f8157 100%);
+    aspect-ratio:9/8;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hero .conviteword{position:relative;z-index:2;color:#fff;letter-spacing:.5em;
+    font-family:'Playfair Display',serif;font-weight:500;font-size:26px;text-transform:uppercase;
+    padding:8px 0;border-bottom:2px solid rgba(255,255,255,.7);text-shadow:0 2px 12px rgba(0,0,0,.3)}
+  .hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:120px;z-index:1;
+    background:linear-gradient(180deg,transparent,var(--cream))}
+
+  /* ---------- DETALHES ---------- */
+  .details{text-align:center;padding:14px 26px 6px}
+  .festa{font-family:'Great Vibes',cursive;color:var(--rust);font-size:42px;line-height:1;margin-bottom:2px}
+  .names{font-family:'Playfair Display',serif;font-weight:800;color:var(--brown);
+    font-size:54px;line-height:1.02;margin:6px 0 10px}
+  .intro{font-size:20px;color:var(--brown-soft);max-width:420px;margin:0 auto 14px}
+  .divider{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0}
+  .divider span{height:1px;width:60px;background:var(--rust)}
+  .divider b{color:var(--rust);transform:rotate(45deg);display:inline-block;width:8px;height:8px;background:var(--rust)}
+  .date{font-family:'Playfair Display',serif;font-weight:700;letter-spacing:.12em;font-size:21px;color:var(--brown)}
+  .time{font-family:'Playfair Display',serif;font-weight:600;letter-spacing:.18em;color:var(--rust);font-size:18px;margin-top:2px}
+  .place{font-family:'Playfair Display',serif;font-weight:700;font-size:22px;margin-top:16px}
+  .addr{color:var(--brown-soft);font-size:18px}
+  .maplink{display:inline-block;margin-top:12px;color:var(--rust);font-weight:600;letter-spacing:.1em;
+    text-transform:uppercase;font-size:14px;font-family:'Playfair Display',serif;text-decoration:none;border-bottom:1px solid var(--rust)}
+
+  /* ---------- FORM ---------- */
+  .form-card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    margin:26px 22px 40px;padding:26px 22px}
+  .form-title{font-family:'Playfair Display',serif;font-weight:700;font-size:26px;text-align:center;margin-bottom:4px}
+  .form-sub{text-align:center;color:var(--brown-soft);margin-bottom:20px;font-size:18px}
+
+  .toggle{display:flex;gap:10px;margin-bottom:20px}
+  .toggle button{flex:1;padding:13px 8px;border:1.5px solid var(--line);background:#fff;color:var(--brown-soft);
+    border-radius:10px;font-family:'Playfair Display',serif;font-size:16px;cursor:pointer;transition:.15s}
+  .toggle button.sim.active{background:var(--green);border-color:var(--green);color:#fff}
+  .toggle button.nao.active{background:#9a5b4a;border-color:#9a5b4a;color:#fff}
+
+  label{display:block;font-family:'Playfair Display',serif;font-weight:500;font-size:15px;
+    margin:14px 0 6px;color:var(--brown)}
+  input[type=text],input[type=tel]{width:100%;padding:12px 14px;border:1.5px solid var(--line);
+    border-radius:9px;background:#fff;font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--brown)}
+  input:focus{outline:none;border-color:var(--rust)}
+
+  .acomp-row{display:flex;gap:8px;margin-bottom:8px}
+  .acomp-row input{flex:1}
+  .acomp-row .rm{border:1.5px solid var(--line);background:#fff;border-radius:9px;width:46px;cursor:pointer;
+    color:#9a5b4a;font-size:20px}
+  .add-acomp{background:none;border:1.5px dashed var(--rust);color:var(--rust);padding:10px;width:100%;
+    border-radius:9px;cursor:pointer;font-family:'Playfair Display',serif;font-size:15px;margin-top:4px}
+  .hint{font-size:14px;color:var(--brown-soft);margin-top:4px}
+
+  .submit{margin-top:22px;width:100%;padding:15px;background:var(--rust);color:#fff;border:none;border-radius:10px;
+    font-family:'Playfair Display',serif;font-weight:600;font-size:18px;letter-spacing:.05em;cursor:pointer;transition:.15s}
+  .submit:hover{background:var(--rust-dark)}
+  .submit:disabled{opacity:.6;cursor:wait}
+
+  .msg{margin-top:14px;text-align:center;font-size:16px;border-radius:9px;padding:10px;display:none}
+  .msg.err{display:block;background:#f6dcd3;color:#8f3f20}
+
+  /* ---------- SUCESSO ---------- */
+  .success{display:none;text-align:center;padding:30px 10px}
+  .success .check{width:70px;height:70px;border-radius:50%;background:var(--green);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 16px}
+  .success h3{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:8px}
+  .success p{color:var(--brown-soft);font-size:19px}
+
+  .footer{text-align:center;color:var(--brown-soft);font-size:14px;padding:10px 0 28px;
+    font-family:'Playfair Display',serif;letter-spacing:.08em}
+
+  @media(max-width:480px){
+    .names{font-size:40px}.festa{font-size:34px}.hero .conviteword{font-size:20px}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- HERO: coloque o arquivo da arte como "convite.jpg" na mesma pasta -->
+    <div class="hero">
+      <img src="convite.jpg" alt="" onerror="this.style.display='none'">
+      <div class="conviteword">Convite</div>
+    </div>
+
+    <!-- DETALHES -->
+    <div class="details">
+      <div class="festa">É dia de festa!</div>
+      <h1 class="names">Electra &amp; Eduardo</h1>
+      <p class="intro">convidam você e sua família para celebrar, juntos, mais um ano de vida.</p>
+      <div class="divider"><span></span><b></b><span></span></div>
+      <div class="date">06 DE SETEMBRO DE 2026</div>
+      <div class="time">A PARTIR DAS 13H</div>
+      <div class="place">Fazenda Barcelona</div>
+      <div class="addr">Km 18 da estrada Rubim–Itapirú · Rubim/MG</div>
+      <a class="maplink" id="maplink" href="#" target="_blank" rel="noopener">📍 Como chegar</a>
+    </div>
+
+    <!-- FORMULÁRIO -->
+    <div class="form-card" id="formCard">
+      <div class="form-title">Confirme sua presença</div>
+      <div class="form-sub">Por favor, responda até 25 de agosto</div>
+
+      <div class="toggle">
+        <button type="button" class="sim active" id="btnSim">Sim, vou! 🎉</button>
+        <button type="button" class="nao" id="btnNao">Não poderei ir</button>
+      </div>
+
+      <form id="form">
+        <label for="nome">Seu nome completo</label>
+        <input type="text" id="nome" placeholder="Ex.: Maria Aroeira" required />
+
+        <label for="whats">WhatsApp</label>
+        <input type="tel" id="whats" placeholder="(00) 00000-0000" required />
+
+        <div id="acompBlock">
+          <label>Acompanhantes (família)</label>
+          <div id="acompList"></div>
+          <button type="button" class="add-acomp" id="addAcomp">+ Adicionar acompanhante</button>
+          <div class="hint">Adicione o nome de cada pessoa que virá com você.</div>
+        </div>
+
+        <button type="submit" class="submit" id="submitBtn">Enviar confirmação</button>
+        <div class="msg err" id="msg"></div>
+      </form>
+    </div>
+
+    <!-- SUCESSO -->
+    <div class="form-card success" id="successCard">
+      <div class="check">✓</div>
+      <h3 id="successTitle">Presença confirmada!</h3>
+      <p id="successText">Que alegria! Mal podemos esperar para celebrar com você. 💛</p>
+    </div>
+
+    <div class="footer">Com carinho, Electra &amp; Eduardo</div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    // mapa
+    if (CONFIG.LINK_MAPA) document.getElementById('maplink').href = CONFIG.LINK_MAPA;
+
+    let comparece = true;
+    const btnSim = document.getElementById('btnSim');
+    const btnNao = document.getElementById('btnNao');
+    const acompBlock = document.getElementById('acompBlock');
+
+    btnSim.onclick = () => { comparece = true; btnSim.classList.add('active'); btnNao.classList.remove('active');
+      acompBlock.style.display='block'; document.getElementById('submitBtn').textContent='Enviar confirmação'; };
+    btnNao.onclick = () => { comparece = false; btnNao.classList.add('active'); btnSim.classList.remove('active');
+      acompBlock.style.display='none'; document.getElementById('submitBtn').textContent='Enviar resposta'; };
+
+    // acompanhantes dinâmicos
+    const acompList = document.getElementById('acompList');
+    function addAcomp(){
+      const row = document.createElement('div');
+      row.className='acomp-row';
+      row.innerHTML = '<input type="text" placeholder="Nome do acompanhante" />'+
+                      '<button type="button" class="rm" title="remover">×</button>';
+      row.querySelector('.rm').onclick = () => row.remove();
+      acompList.appendChild(row);
+    }
+    document.getElementById('addAcomp').onclick = addAcomp;
+
+    // WhatsApp máscara simples
+    const whats = document.getElementById('whats');
+    whats.addEventListener('input', () => {
+      let v = whats.value.replace(/\D/g,'').slice(0,11);
+      if(v.length>=7) v = '('+v.slice(0,2)+') '+v.slice(2,7)+'-'+v.slice(7);
+      else if(v.length>=3) v = '('+v.slice(0,2)+') '+v.slice(2);
+      else if(v.length>=1) v = '('+v;
+      whats.value = v;
+    });
+
+    // envio
+    const form = document.getElementById('form');
+    const msg = document.getElementById('msg');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.classList.remove('err'); msg.textContent='';
+      const nome = document.getElementById('nome').value.trim();
+      const telefone = whats.value.trim();
+      if(!nome || !telefone){ showErr('Por favor, preencha nome e WhatsApp.'); return; }
+
+      const acompanhantes = comparece
+        ? [...acompList.querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean)
+        : [];
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true; btn.textContent = 'Enviando...';
+
+      try {
+        const resp = await fetch(CONFIG.WEBAPP_URL, {
+          method: 'POST',
+          body: JSON.stringify({ nome, telefone, comparece, acompanhantes })
+        });
+        const r = await resp.json();
+        if (r.error) throw new Error(r.error);
+      } catch (err) {
+        btn.disabled=false; btn.textContent='Tentar novamente';
+        showErr('Ops, não consegui enviar. Verifique a conexão e tente de novo.');
+        console.error(err); return;
+      }
+
+      document.getElementById('formCard').style.display='none';
+      const s = document.getElementById('successCard');
+      if(comparece){
+        document.getElementById('successTitle').textContent='Presença confirmada!';
+        document.getElementById('successText').textContent='Que alegria! Mal podemos esperar para celebrar com você. 💛';
+      }else{
+        document.getElementById('successTitle').textContent='Resposta registrada';
+        document.getElementById('successText').textContent='Obrigado por avisar! Você fará falta. 💛';
+      }
+      s.style.display='block';
+      window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+    });
+
+    function showErr(t){ msg.textContent=t; msg.classList.add('err'); }
+  </script>
+</body>
+</html>
