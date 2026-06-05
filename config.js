@@ -12,5 +12,5 @@ const CONFIG = {
   ADMIN_SENHA: "festa2026",
 
   // 3) (Opcional) Link do Google Maps com a localização da festa
-  LINK_MAPA: "https://maps.google.com/?q=Fazenda+Barcelona+Rubim+MG"
+  LINK_MAPA: "https://maps.app.goo.gl/5LrS7y3vmhNUrKiM8"
 };
