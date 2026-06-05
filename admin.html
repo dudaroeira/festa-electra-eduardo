@@ -6,6 +6,8 @@
 <title>Painel · Confirmações da Festa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
   :root{--cream:#efe6d5;--card:#f7f1e4;--brown:#3c2e23;--brown-soft:#5b4a3b;
     --rust:#b0522d;--line:#d8c9ad;--green:#5a6b4a;--red:#9a5b4a}
@@ -31,7 +33,10 @@
   .stat .num{font-family:'Playfair Display',serif;font-weight:800;font-size:42px;color:var(--rust);line-height:1}
   .stat .lbl{color:var(--brown-soft);margin-top:6px;font-size:15px}
   .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap}
-  .toolbar .btn.ghost{background:#fff;color:var(--brown);border:1.5px solid var(--line)}
+  .toolbar .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn.ghost{background:#fff;color:var(--brown);border:1.5px solid var(--line)}
+  .btn.pdf{background:var(--green);color:#fff}
+  .btn.pdf2{background:#9a5b4a;color:#fff}
 
   table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);
     border-radius:14px;overflow:hidden}
@@ -73,7 +78,11 @@
 
     <div class="toolbar">
       <div id="statusMsg" style="color:var(--brown-soft)"></div>
-      <button class="btn ghost" onclick="carregar()">↻ Atualizar</button>
+      <div class="actions">
+        <button class="btn pdf" onclick="gerarPDF('confirmados')">📄 PDF Confirmados</button>
+        <button class="btn pdf2" onclick="gerarPDF('ausentes')">📄 PDF Ausentes</button>
+        <button class="btn ghost" onclick="carregar()">↻ Atualizar</button>
+      </div>
     </div>
 
     <table>
@@ -86,6 +95,8 @@
 
 <script src="config.js"></script>
 <script>
+  let dados = [];
+
   function entrar(){
     const v = document.getElementById('senha').value;
     if(v === CONFIG.ADMIN_SENHA){
@@ -115,6 +126,7 @@
       console.error(error); return;
     }
 
+    dados = data;
     const confirmados = data.filter(d=>d.comparece);
     const recusados = data.filter(d=>!d.comparece);
     let totalPessoas = 0;
@@ -158,6 +170,77 @@
   }
 
   function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  function gerarPDF(tipo){
+    if(!window.jspdf || !window.jspdf.jsPDF){ alert('A biblioteca de PDF ainda está carregando. Tente novamente em alguns segundos.'); return; }
+    if(!dados.length){ alert('Não há dados carregados ainda.'); return; }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const RUST=[176,82,45], BROWN=[60,46,35], RED=[154,91,74], GREEN=[90,107,74];
+
+    const confirmados = dados.filter(d=>d.comparece);
+    const ausentes = dados.filter(d=>!d.comparece);
+
+    // Cabeçalho
+    doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor.apply(doc, BROWN);
+    doc.text('Festa Electra & Eduardo', 14, 20);
+    doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(120,120,120);
+    doc.text('06 de setembro de 2026  -  Fazenda Barcelona, Rubim/MG', 14, 27);
+
+    let head, body, titulo, resumo, cor, nomeArq;
+
+    if(tipo==='confirmados'){
+      let totalPessoas=0;
+      confirmados.forEach(d=>{ totalPessoas += 1 + ((d.acompanhantes&&d.acompanhantes.length)||0); });
+      titulo='Lista de Confirmados';
+      resumo = confirmados.length + ' familia(s)  -  ' + totalPessoas + ' pessoa(s) no total';
+      cor = GREEN;
+      head=[['#','Nome','WhatsApp','Acompanhantes','Pessoas']];
+      body=confirmados.map((d,i)=>[
+        i+1,
+        d.nome||'',
+        d.telefone||'',
+        (d.acompanhantes&&d.acompanhantes.length)? d.acompanhantes.join(', ') : '-',
+        1 + ((d.acompanhantes&&d.acompanhantes.length)||0)
+      ]);
+      nomeArq='confirmados-festa.pdf';
+    } else {
+      titulo='Lista de Ausentes';
+      resumo = ausentes.length + ' nao poderao comparecer';
+      cor = RED;
+      head=[['#','Nome','WhatsApp']];
+      body=ausentes.map((d,i)=>[ i+1, d.nome||'', d.telefone||'' ]);
+      nomeArq='ausentes-festa.pdf';
+    }
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor.apply(doc, cor);
+    doc.text(titulo, 14, 40);
+    doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor.apply(doc, BROWN);
+    doc.text(resumo, 14, 47);
+
+    if(!body.length){
+      doc.setTextColor(120,120,120);
+      doc.text('(Nenhum registro nesta lista ainda.)', 14, 58);
+    } else {
+      doc.autoTable({
+        startY: 52,
+        head: head,
+        body: body,
+        styles:{ font:'helvetica', fontSize:10, cellPadding:3, textColor:BROWN },
+        headStyles:{ fillColor:cor, textColor:[255,255,255] },
+        alternateRowStyles:{ fillColor:[245,238,224] },
+        columnStyles: tipo==='confirmados' ? {0:{cellWidth:12},4:{cellWidth:20,halign:'center'}} : {0:{cellWidth:12}},
+        margin:{ left:14, right:14 }
+      });
+    }
+
+    const y = (doc.lastAutoTable ? doc.lastAutoTable.finalY : 58) + 10;
+    doc.setFontSize(9); doc.setTextColor(150,150,150);
+    doc.text('Gerado em ' + new Date().toLocaleString('pt-BR'), 14, y);
+
+    doc.save(nomeArq);
+  }
 </script>
 </body>
 </html>
