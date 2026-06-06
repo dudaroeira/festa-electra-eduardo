@@ -49,8 +49,26 @@
   .tag.nao{background:#f0dcd5;color:var(--red)}
   .acomp{color:var(--brown-soft);font-size:15px}
   .del{background:none;border:none;color:var(--red);cursor:pointer;font-size:18px}
+  .edit{background:none;border:none;color:var(--rust);cursor:pointer;font-size:18px}
   .empty{text-align:center;color:var(--brown-soft);padding:30px}
   a.back{display:inline-block;margin-top:20px;color:var(--rust);text-decoration:none;font-family:'Playfair Display',serif}
+
+  /* modal de edição */
+  .modal{display:none;position:fixed;inset:0;background:rgba(60,46,35,.45);z-index:50;
+    align-items:center;justify-content:center;padding:18px}
+  .modal.open{display:flex}
+  .modal .box{background:var(--cream);border:1px solid var(--line);border-radius:14px;
+    width:100%;max-width:440px;padding:24px;max-height:90vh;overflow:auto}
+  .modal h3{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px;color:var(--brown)}
+  .modal label{display:block;font-family:'Playfair Display',serif;font-size:14px;margin:12px 0 5px;color:var(--brown)}
+  .modal input,.modal select,.modal textarea{width:100%;padding:10px 12px;border:1.5px solid var(--line);
+    border-radius:9px;background:#fff;font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--brown)}
+  .modal textarea{min-height:70px;resize:vertical}
+  .modal .row-btns{display:flex;gap:10px;margin-top:20px}
+  .modal .row-btns .btn{flex:1;text-align:center}
+  .btn.save{background:var(--green);color:#fff}
+  .btn.cancel{background:#fff;color:var(--brown);border:1.5px solid var(--line)}
+
   @media(max-width:560px){.cards{grid-template-columns:1fr}th:nth-child(2),td:nth-child(2){display:none}}
 </style>
 </head>
@@ -90,6 +108,30 @@
       <tbody id="tbody"></tbody>
     </table>
     <a class="back" href="index.html">← Ver convite</a>
+  </div>
+</div>
+
+<!-- MODAL DE EDIÇÃO -->
+<div class="modal" id="editModal">
+  <div class="box">
+    <h3>Editar confirmação</h3>
+    <input type="hidden" id="edId">
+    <label>Nome</label>
+    <input type="text" id="edNome">
+    <label>WhatsApp</label>
+    <input type="text" id="edTel">
+    <label>Vai comparecer?</label>
+    <select id="edComp">
+      <option value="sim">Sim</option>
+      <option value="nao">Não</option>
+    </select>
+    <label>Acompanhantes (um por linha)</label>
+    <textarea id="edAcomp" placeholder="Um nome por linha"></textarea>
+    <div class="row-btns">
+      <button class="btn cancel" onclick="fecharModal()">Cancelar</button>
+      <button class="btn save" id="edSalvar" onclick="salvarEdicao()">Salvar</button>
+    </div>
+    <div id="edMsg" style="color:var(--red);margin-top:10px;text-align:center;font-size:14px"></div>
   </div>
 </div>
 
@@ -150,7 +192,7 @@
         `<td>${esc(d.telefone||'')}</td>`+
         `<td class="acomp">${esc(acomp)}</td>`+
         `<td>${d.comparece?'<span class="tag sim">Vai</span>':'<span class="tag nao">Não vai</span>'}</td>`+
-        `<td><button class="del" title="excluir" onclick="excluir('${d.id}')">🗑</button></td>`;
+        `<td style="white-space:nowrap"><button class="edit" title="editar" onclick="abrirEdicao('${d.id}')">✏️</button> <button class="del" title="excluir" onclick="excluir('${d.id}')">🗑</button></td>`;
       tb.appendChild(tr);
     });
     status.textContent = `${data.length} resposta(s) · atualizado ${new Date().toLocaleTimeString('pt-BR')}`;
@@ -170,6 +212,41 @@
   }
 
   function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  function abrirEdicao(id){
+    const d = dados.find(x=>String(x.id)===String(id));
+    if(!d) return;
+    document.getElementById('edId').value = d.id;
+    document.getElementById('edNome').value = d.nome||'';
+    document.getElementById('edTel').value = d.telefone||'';
+    document.getElementById('edComp').value = d.comparece ? 'sim' : 'nao';
+    document.getElementById('edAcomp').value = (d.acompanhantes||[]).join('\n');
+    document.getElementById('edMsg').textContent='';
+    document.getElementById('editModal').classList.add('open');
+  }
+  function fecharModal(){ document.getElementById('editModal').classList.remove('open'); }
+
+  async function salvarEdicao(){
+    const id = document.getElementById('edId').value;
+    const nome = document.getElementById('edNome').value.trim();
+    const telefone = document.getElementById('edTel').value.trim();
+    const comparece = document.getElementById('edComp').value === 'sim';
+    const acompanhantes = document.getElementById('edAcomp').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    if(!nome){ document.getElementById('edMsg').textContent='Informe o nome.'; return; }
+    const btn = document.getElementById('edSalvar'); btn.disabled=true; btn.textContent='Salvando...';
+    try{
+      const resp = await fetch(CONFIG.WEBAPP_URL,{method:'POST',
+        body: JSON.stringify({ action:'update', id, nome, telefone, comparece, acompanhantes, key: CONFIG.ADMIN_SENHA })});
+      const r = await resp.json();
+      if(r.error) throw new Error(r.error);
+    }catch(e){
+      document.getElementById('edMsg').textContent='Não consegui salvar. Tente de novo.';
+      btn.disabled=false; btn.textContent='Salvar'; console.error(e); return;
+    }
+    btn.disabled=false; btn.textContent='Salvar';
+    fecharModal();
+    carregar();
+  }
 
   function gerarPDF(tipo){
     if(!window.jspdf || !window.jspdf.jsPDF){ alert('A biblioteca de PDF ainda está carregando. Tente novamente em alguns segundos.'); return; }

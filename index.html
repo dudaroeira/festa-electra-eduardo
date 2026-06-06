@@ -77,6 +77,15 @@
   .msg{margin-top:14px;text-align:center;font-size:16px;border-radius:9px;padding:10px;display:none}
   .msg.err{display:block;background:#f6dcd3;color:#8f3f20}
 
+  .dup-box{display:none;background:#fbeede;border:1.5px solid #e0b48f;border-radius:10px;
+    padding:14px 16px;margin-bottom:18px;text-align:center;color:#8f3f20;font-size:16px}
+  .dup-box .edit-btn{margin-top:10px;background:var(--rust);color:#fff;border:none;border-radius:9px;
+    padding:10px 18px;font-family:'Playfair Display',serif;font-size:15px;cursor:pointer}
+  .dup-box .edit-btn:hover{background:var(--rust-dark)}
+  .editing-flag{display:none;background:#dfe7d3;color:#445236;border-radius:9px;padding:9px;
+    text-align:center;font-family:'Playfair Display',serif;font-size:15px;margin-bottom:14px}
+  .hint-edit{text-align:center;color:var(--brown-soft);font-size:14px;margin-bottom:16px}
+
   /* ---------- SUCESSO ---------- */
   .success{display:none;text-align:center;padding:30px 10px}
   .success .check{width:70px;height:70px;border-radius:50%;background:var(--green);color:#fff;
@@ -111,6 +120,14 @@
     <div class="form-card" id="formCard">
       <div class="form-title">Confirme sua presença</div>
       <div class="form-sub">Por favor, responda até 25 de agosto</div>
+      <div class="hint-edit">Já confirmou e quer corrigir algo? Envie de novo com o mesmo WhatsApp.</div>
+
+      <div class="editing-flag" id="editingFlag">✏️ Você está editando sua confirmação</div>
+
+      <div class="dup-box" id="dupBox">
+        <div id="dupText"></div>
+        <button type="button" class="edit-btn" id="dupEdit">✏️ Editar minha confirmação</button>
+      </div>
 
       <div class="toggle">
         <button type="button" class="sim active" id="btnSim">Sim, vou! 🎉</button>
@@ -157,9 +174,9 @@
     const acompBlock = document.getElementById('acompBlock');
 
     btnSim.onclick = () => { comparece = true; btnSim.classList.add('active'); btnNao.classList.remove('active');
-      acompBlock.style.display='block'; document.getElementById('submitBtn').textContent='Enviar confirmação'; };
+      acompBlock.style.display='block'; document.getElementById('submitBtn').textContent=btnLabelPadrao(); };
     btnNao.onclick = () => { comparece = false; btnNao.classList.add('active'); btnSim.classList.remove('active');
-      acompBlock.style.display='none'; document.getElementById('submitBtn').textContent='Enviar resposta'; };
+      acompBlock.style.display='none'; document.getElementById('submitBtn').textContent=btnLabelPadrao(); };
 
     // acompanhantes dinâmicos
     const acompList = document.getElementById('acompList');
@@ -184,11 +201,38 @@
     });
 
     // envio
+    let editId = null;
     const form = document.getElementById('form');
     const msg = document.getElementById('msg');
+    const dupBox = document.getElementById('dupBox');
+    const dupText = document.getElementById('dupText');
+    const editingFlag = document.getElementById('editingFlag');
+
+    function btnLabelPadrao(){
+      return editId ? 'Salvar alterações' : (comparece ? 'Enviar confirmação' : 'Enviar resposta');
+    }
+
+    function preencherForm(ex){
+      document.getElementById('nome').value = ex.nome || '';
+      whats.value = ex.telefone || '';
+      if(ex.comparece === false){ btnNao.click(); } else { btnSim.click(); }
+      acompList.innerHTML = '';
+      (ex.acompanhantes || []).forEach(n => {
+        addAcomp();
+        const ins = acompList.querySelectorAll('input');
+        ins[ins.length - 1].value = n;
+      });
+      editId = ex.id;
+      dupBox.style.display = 'none';
+      editingFlag.style.display = 'block';
+      document.getElementById('submitBtn').textContent = btnLabelPadrao();
+      document.getElementById('nome').focus();
+    }
+    document.getElementById('dupEdit').onclick = () => preencherForm(window._dupExisting || {});
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      msg.classList.remove('err'); msg.textContent='';
+      msg.classList.remove('err'); msg.textContent=''; dupBox.style.display='none';
       const nome = document.getElementById('nome').value.trim();
       const telefone = whats.value.trim();
       if(!nome || !telefone){ showErr('Por favor, preencha nome e WhatsApp.'); return; }
@@ -198,27 +242,41 @@
         : [];
 
       const btn = document.getElementById('submitBtn');
-      btn.disabled = true; btn.textContent = 'Enviando...';
+      btn.disabled = true; btn.textContent = editId ? 'Salvando...' : 'Enviando...';
 
       try {
-        const resp = await fetch(CONFIG.WEBAPP_URL, {
-          method: 'POST',
-          body: JSON.stringify({ nome, telefone, comparece, acompanhantes })
-        });
+        const payload = editId
+          ? { action:'update', id: editId, nome, telefone, comparece, acompanhantes }
+          : { nome, telefone, comparece, acompanhantes };
+        const resp = await fetch(CONFIG.WEBAPP_URL, { method:'POST', body: JSON.stringify(payload) });
         const r = await resp.json();
         if (r.error) throw new Error(r.error);
+        if (!editId && r.duplicate) {
+          window._dupExisting = r.existing;
+          dupText.innerHTML = 'Este WhatsApp já confirmou' +
+            (r.existing && r.existing.nome ? ' em nome de <b>'+r.existing.nome+'</b>' : '') +
+            '. Quer editar o que já foi enviado?';
+          dupBox.style.display = 'block';
+          btn.disabled=false; btn.textContent = btnLabelPadrao();
+          dupBox.scrollIntoView({behavior:'smooth', block:'center'});
+          return;
+        }
       } catch (err) {
-        btn.disabled=false; btn.textContent='Tentar novamente';
+        btn.disabled=false; btn.textContent = editId ? 'Salvar alterações' : 'Tentar novamente';
         showErr('Ops, não consegui enviar. Verifique a conexão e tente de novo.');
         console.error(err); return;
       }
 
+      const editou = !!editId;
       document.getElementById('formCard').style.display='none';
       const s = document.getElementById('successCard');
-      if(comparece){
+      if(editou){
+        document.getElementById('successTitle').textContent='Confirmação atualizada!';
+        document.getElementById('successText').textContent='Seus dados foram atualizados com sucesso. 💛';
+      } else if(comparece){
         document.getElementById('successTitle').textContent='Presença confirmada!';
         document.getElementById('successText').textContent='Que alegria! Mal podemos esperar para celebrar com você. 💛';
-      }else{
+      } else {
         document.getElementById('successTitle').textContent='Resposta registrada';
         document.getElementById('successText').textContent='Obrigado por avisar! Você fará falta. 💛';
       }
