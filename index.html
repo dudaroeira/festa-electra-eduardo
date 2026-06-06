@@ -32,31 +32,16 @@
   .wrap{max-width:640px;margin:0 auto;background:var(--cream);min-height:100vh;
     box-shadow:0 0 60px rgba(60,46,35,.08);}
 
-  /* ---------- HERO ---------- */
-  .hero{position:relative;background:linear-gradient(180deg,#9fb08c 0%,#7d9268 45%,#6f8157 100%);
-    aspect-ratio:9/8;display:flex;align-items:center;justify-content:center;overflow:hidden}
-  .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-  .hero .conviteword{position:relative;z-index:2;color:#fff;letter-spacing:.5em;
-    font-family:'Playfair Display',serif;font-weight:500;font-size:26px;text-transform:uppercase;
-    padding:8px 0;border-bottom:2px solid rgba(255,255,255,.7);text-shadow:0 2px 12px rgba(0,0,0,.3)}
-  .hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:120px;z-index:1;
-    background:linear-gradient(180deg,transparent,var(--cream))}
+  /* ---------- ARTE DO CONVITE (imagem inteira) ---------- */
+  .hero{display:block;background:var(--cream);line-height:0}
+  .hero img{display:block;width:100%;height:auto}
 
-  /* ---------- DETALHES ---------- */
-  .details{text-align:center;padding:14px 26px 6px}
-  .festa{font-family:'Great Vibes',cursive;color:var(--rust);font-size:42px;line-height:1;margin-bottom:2px}
-  .names{font-family:'Playfair Display',serif;font-weight:800;color:var(--brown);
-    font-size:54px;line-height:1.02;margin:6px 0 10px;word-break:break-word}
-  .intro{font-size:20px;color:var(--brown-soft);max-width:420px;margin:0 auto 14px}
-  .divider{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0}
-  .divider span{height:1px;width:60px;background:var(--rust)}
-  .divider b{color:var(--rust);transform:rotate(45deg);display:inline-block;width:8px;height:8px;background:var(--rust)}
-  .date{font-family:'Playfair Display',serif;font-weight:700;letter-spacing:.12em;font-size:21px;color:var(--brown)}
-  .time{font-family:'Playfair Display',serif;font-weight:600;letter-spacing:.18em;color:var(--rust);font-size:18px;margin-top:2px}
-  .place{font-family:'Playfair Display',serif;font-weight:700;font-size:22px;margin-top:16px}
-  .addr{color:var(--brown-soft);font-size:18px}
-  .maplink{display:inline-block;margin-top:12px;color:var(--rust);font-weight:600;letter-spacing:.1em;
-    text-transform:uppercase;font-size:14px;font-family:'Playfair Display',serif;text-decoration:none;border-bottom:1px solid var(--rust)}
+  /* ---------- COMO CHEGAR ---------- */
+  .cta{text-align:center;padding:22px 20px 0}
+  .maplink{display:inline-block;color:var(--rust);font-weight:600;letter-spacing:.06em;
+    font-size:16px;font-family:'Playfair Display',serif;text-decoration:none;
+    border:1.5px solid var(--rust);border-radius:10px;padding:11px 22px;transition:.15s}
+  .maplink:hover{background:var(--rust);color:#fff}
 
   /* ---------- FORM ---------- */
   .form-card{background:var(--card);border:1px solid var(--line);border-radius:14px;
@@ -104,38 +89,21 @@
 
   @media(max-width:480px){
     body{font-size:17px}
-    .details{padding:14px 18px 6px}
-    .form-card{margin:22px 14px 34px;padding:22px 16px}
-    .names{font-size:40px}
-    .festa{font-size:34px}
-    .hero .conviteword{font-size:20px}
-    .intro{font-size:18px}
-    .date{font-size:18px;letter-spacing:.08em}
-    .time{font-size:16px;letter-spacing:.12em}
-    .place{font-size:20px}
-    .addr{font-size:16px}
+    .cta{padding:18px 16px 0}
+    .form-card{margin:20px 14px 34px;padding:22px 16px}
   }
 </style>
 </head>
 <body>
   <div class="wrap">
 
-    <!-- HERO: coloque o arquivo da arte como "convite.jpg" na mesma pasta -->
+    <!-- ARTE DO CONVITE (imagem inteira) -->
     <div class="hero">
-      <img src="convite.jpg" alt="" onerror="this.style.display='none'">
-      <div class="conviteword">Convite</div>
+      <img src="convite.jpg" alt="Convite — Electra & Eduardo" />
     </div>
 
-    <!-- DETALHES -->
-    <div class="details">
-      <div class="festa">É dia de festa!</div>
-      <h1 class="names">Electra &amp; Eduardo</h1>
-      <p class="intro">convidam você e sua família para celebrar, juntos, mais um ano de vida.</p>
-      <div class="divider"><span></span><b></b><span></span></div>
-      <div class="date">06 DE SETEMBRO DE 2026</div>
-      <div class="time">A PARTIR DAS 13H</div>
-      <div class="place">Fazenda Barcelona</div>
-      <div class="addr">Km 18 da estrada Rubim–Itapirú · Rubim/MG</div>
+    <!-- COMO CHEGAR -->
+    <div class="cta">
       <a class="maplink" id="maplink" href="#" target="_blank" rel="noopener">📍 Como chegar</a>
     </div>
 
