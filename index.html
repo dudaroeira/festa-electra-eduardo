@@ -136,10 +136,10 @@
 
       <form id="form">
         <label for="nome">Seu nome completo</label>
-        <input type="text" id="nome" placeholder="Ex.: Maria Almeida" required />
+        <input type="text" id="nome" placeholder="Ex.: Maria Almeida" autocomplete="name" required />
 
         <label for="whats">WhatsApp</label>
-        <input type="tel" id="whats" placeholder="(00) 00000-0000" required />
+        <input type="tel" id="whats" placeholder="(00) 00000-0000" autocomplete="tel" required />
 
         <div id="acompBlock">
           <label>Acompanhantes (família)</label>
@@ -183,7 +183,7 @@
     function addAcomp(){
       const row = document.createElement('div');
       row.className='acomp-row';
-      row.innerHTML = '<input type="text" placeholder="Nome do acompanhante" />'+
+      row.innerHTML = '<input type="text" placeholder="Nome do acompanhante" autocomplete="off" autocorrect="off" />'+
                       '<button type="button" class="rm" title="remover">×</button>';
       row.querySelector('.rm').onclick = () => row.remove();
       acompList.appendChild(row);
